@@ -85,7 +85,14 @@ class Game {
         attributeFilter: ['class']
       });
     });
-    window.addEventListener('resize', () => this.scheduleOverlayFit(), { passive: true });
+    const refreshViewportLayout = () => this.scheduleOverlayFit();
+    window.addEventListener('resize', refreshViewportLayout, { passive: true });
+    window.addEventListener('orientationchange', refreshViewportLayout, { passive: true });
+    document.addEventListener('fullscreenchange', refreshViewportLayout, { passive: true });
+    document.addEventListener('webkitfullscreenchange', refreshViewportLayout, { passive: true });
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', refreshViewportLayout, { passive: true });
+    }
     if (document.fonts && document.fonts.ready) {
       document.fonts.ready.then(() => this.scheduleOverlayFit());
     }
@@ -1694,6 +1701,19 @@ class Game {
 
   // --- Keyboard & Touch Input Event Listeners ---
   bindInputs() {
+    const clearInputState = () => {
+      Object.keys(this.input).forEach((key) => {
+        this.input[key] = false;
+      });
+    };
+
+    // Prevent a held key or touch button from sticking when the device
+    // rotates, enters fullscreen, or the browser source loses focus.
+    window.addEventListener('blur', clearInputState);
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) clearInputState();
+    });
+
     window.addEventListener('keydown', (e) => {
       if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
         e.preventDefault();
@@ -1765,6 +1785,7 @@ class Game {
     });
 
     // Mouse Clicks on Canvas
+    this.canvas.addEventListener('pointerdown', () => this.canvas.focus(), { passive: true });
     this.canvas.addEventListener('mousedown', (e) => {
       if (e.button === 0) {
         this.input.slash = true;
@@ -1782,8 +1803,25 @@ class Game {
     const bindTouch = (id, key) => {
       const el = document.getElementById(id);
       if (!el) return;
-      el.addEventListener('touchstart', (e) => { e.preventDefault(); this.input[key] = true; });
-      el.addEventListener('touchend', (e) => { e.preventDefault(); this.input[key] = false; });
+
+      const release = (e) => {
+        e.preventDefault();
+        this.input[key] = false;
+        if (e.pointerId !== undefined && el.hasPointerCapture?.(e.pointerId)) {
+          el.releasePointerCapture(e.pointerId);
+        }
+      };
+
+      el.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        this.input[key] = true;
+        el.setPointerCapture?.(e.pointerId);
+      });
+      el.addEventListener('pointerup', release);
+      el.addEventListener('pointercancel', release);
+      el.addEventListener('lostpointercapture', () => {
+        this.input[key] = false;
+      });
     };
 
     bindTouch('btn-touch-left', 'left');

@@ -20,28 +20,39 @@
   -webkit-user-select: none;
 }
 
+html {
+  width: 100%;
+  height: 100%;
+  background: var(--bg-dark);
+}
+
 body {
   background-color: var(--bg-dark);
   background-image: radial-gradient(circle at 50% 30%, #152232 0%, #080c10 100%);
   color: #f1faee;
   font-family: 'Rajdhani', 'Noto Sans Georgian', sans-serif;
   overflow: hidden;
-  height: 100vh;
-  height: 100dvh;
-  width: 100vw;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  min-height: 100vh;
+  min-height: 100svh;
+  min-height: 100dvh;
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
+    env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  overscroll-behavior: none;
 }
 
 #game-container {
   position: relative;
-  width: min(100vw, 177.7778vh, 1200px);
-  width: min(100vw, 177.7778dvh, 1200px);
+  width: min(100%, calc(100dvh * 16 / 9), 1200px);
   max-width: 1200px;
   height: auto;
-  max-height: 100dvh;
+  max-height: 100%;
   aspect-ratio: 16 / 9;
   background: #000;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9), 0 0 25px rgba(56, 176, 0, 0.2);
@@ -55,12 +66,27 @@ body {
   position: relative;
   width: 100%;
   height: 100%;
+  min-width: 0;
+  min-height: 0;
 }
 
 canvas#gameCanvas {
   width: 100%;
   height: 100%;
   display: block;
+  outline: none;
+  touch-action: none;
+}
+
+#game-container:fullscreen,
+#game-container:-webkit-full-screen {
+  width: 100vw;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  aspect-ratio: auto;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 /* ==================== HUD ==================== */
@@ -350,8 +376,23 @@ canvas#gameCanvas {
 .modal-box.overlay-fit-compact {
   width: calc(100% / var(--overlay-fit-scale, 1));
   max-width: none;
+  max-height: none;
+  overflow: visible;
   transform: scale(var(--overlay-fit-scale, 1));
   transform-origin: center center;
+}
+
+/* ID-based mobile/tablet rules set overflow:hidden on modal boxes. The
+   compact fit must override that so the last action button is not clipped. */
+#game-container .modal-box.overlay-fit-compact {
+  max-height: none;
+  overflow: visible;
+}
+
+#overlay-settings .modal-box {
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
 }
 
 .modal-title {
@@ -849,9 +890,9 @@ canvas#gameCanvas {
   #game-container:has(#overlay-victory:not(.hidden)),
   #game-container:has(#overlay-defeat:not(.hidden)),
   #game-container:has(#overlay-campaign-clear:not(.hidden)) {
-    width: 100vw;
-    height: 100dvh;
-    max-height: 100dvh;
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
     aspect-ratio: auto;
   }
   #overlay-start,
@@ -978,9 +1019,9 @@ canvas#gameCanvas {
   #game-container:has(#overlay-victory:not(.hidden)),
   #game-container:has(#overlay-defeat:not(.hidden)),
   #game-container:has(#overlay-campaign-clear:not(.hidden)) {
-    width: 100vw;
-    height: 100dvh;
-    max-height: 100dvh;
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
     aspect-ratio: auto;
   }
   #overlay-start,
@@ -1323,4 +1364,143 @@ canvas#gameCanvas {
     gap: 7px;
     font-size: 12px;
   }
+}
+
+/* Final viewport hardening for itch.io fullscreen, phones, and tablets. */
+.overlay {
+  padding-top: max(8px, env(safe-area-inset-top, 0px));
+  padding-right: max(8px, env(safe-area-inset-right, 0px));
+  padding-bottom: max(8px, env(safe-area-inset-bottom, 0px));
+  padding-left: max(8px, env(safe-area-inset-left, 0px));
+}
+
+.touch-btn,
+.hud-btn,
+.btn-primary,
+.btn-secondary,
+.lang-btn,
+.stage-select-btn,
+.color-option-btn {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Some tablets are wider than 900px but still expose a coarse touch pointer.
+   Keep their touch controls visible instead of relying only on width. */
+@media (pointer: coarse) {
+  #controls-hint {
+    display: none;
+  }
+
+  .mobile-control-bar {
+    position: absolute;
+    left: max(6px, env(safe-area-inset-left, 0px));
+    right: max(6px, env(safe-area-inset-right, 0px));
+    bottom: max(8px, env(safe-area-inset-bottom, 0px));
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    z-index: 25;
+    pointer-events: none;
+  }
+
+  #touch-controls {
+    position: static;
+    display: flex;
+    flex: 1 1 auto;
+    min-width: 0;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 0;
+    pointer-events: auto;
+    order: 1;
+  }
+
+  .touch-cluster {
+    gap: clamp(4px, 1vw, 10px);
+    pointer-events: auto;
+  }
+
+  .touch-btn {
+    width: clamp(38px, 6vmin, 64px);
+    height: clamp(38px, 6vmin, 64px);
+    font-size: clamp(11px, 1.7vmin, 18px);
+    flex: 0 0 auto;
+  }
+
+  .mobile-control-bar .hud-controls {
+    position: static;
+    display: flex;
+    flex: 0 0 auto;
+    max-width: none;
+    gap: 4px;
+    flex-wrap: nowrap;
+    pointer-events: auto;
+    order: 2;
+  }
+
+  .mobile-control-bar .hud-btn {
+    width: clamp(38px, 6vmin, 64px);
+    min-width: clamp(38px, 6vmin, 64px);
+    height: clamp(38px, 6vmin, 64px);
+    padding: 0;
+    font-size: 0;
+    gap: 0;
+    justify-content: center;
+  }
+
+  .mobile-control-bar .hud-btn::before {
+    font-size: clamp(16px, 2.6vmin, 24px);
+    line-height: 1;
+  }
+
+  #btn-settings::before { content: '⚙️'; }
+  #btn-main-menu::before { content: '🏠'; }
+}
+
+@media (max-height: 520px) and (orientation: landscape) {
+  .mobile-control-bar {
+    bottom: max(5px, env(safe-area-inset-bottom, 0px));
+  }
+
+  .touch-btn,
+  .mobile-control-bar .hud-btn {
+    width: clamp(34px, 9vh, 56px);
+    min-width: clamp(34px, 9vh, 56px);
+    height: clamp(34px, 9vh, 56px);
+  }
+}
+
+@media (pointer: coarse) and (max-width: 600px) {
+  .mobile-control-bar {
+    left: max(4px, env(safe-area-inset-left, 0px));
+    right: max(4px, env(safe-area-inset-right, 0px));
+    gap: 4px;
+  }
+
+  #touch-controls {
+    gap: 4px;
+  }
+
+  .touch-cluster {
+    gap: 2px;
+  }
+
+  .touch-btn,
+  .mobile-control-bar .hud-btn {
+    width: clamp(32px, 9vw, 44px);
+    min-width: clamp(32px, 9vw, 44px);
+    height: clamp(32px, 9vw, 44px);
+  }
+
+  .mobile-control-bar .hud-controls {
+    gap: 2px;
+  }
+}
+
+/* Keep the settings action reachable even when a very short viewport cannot
+   fit the whole form at once. */
+#overlay-settings .modal-box:not(.overlay-fit-compact) {
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
 }
