@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mantis: Defeat the Creatures</title>
+  <link rel="stylesheet" href="css/style.css?v=responsive-20260913">
+</head>
+<body>
+
+  <div id="game-container">
+    <div id="canvas-wrapper">
+      <canvas id="gameCanvas" width="1280" height="720"></canvas>
+
+      <!-- Combat HUD -->
+      <div id="hud">
+        <!-- Mantis HUD (Player) -->
+        <div class="fighter-hud mantis-hud">
+          <div class="fighter-meta">
+            <div class="fighter-avatar" id="mantis-avatar">🦗</div>
+            <div class="fighter-title">
+              <span class="fighter-name" id="mantis-name">MANTIS</span>
+              <span class="fighter-scientific">Mantis religiosa</span>
+            </div>
+          </div>
+          <div class="bar-container">
+            <div class="hp-bar-bg" id="mantis-hp-bg"></div>
+            <div class="hp-bar-fill" id="mantis-hp-fill"></div>
+            <span class="hp-text" id="mantis-hp-text">100 / 100</span>
+          </div>
+        </div>
+
+        <!-- Center Stage & Timer Info -->
+        <div class="center-hud">
+          <span class="stage-badge" id="stage-badge">STAGE 1 / 8</span>
+          <span class="timer-text" id="round-timer">99</span>
+        </div>
+
+        <!-- Enemy HUD -->
+        <div class="fighter-hud enemy-hud">
+          <div class="fighter-meta">
+            <div class="fighter-avatar" id="enemy-avatar">🦗</div>
+            <div class="fighter-title">
+              <span class="fighter-name" id="enemy-name">TRUXALIS</span>
+              <span class="fighter-scientific" id="enemy-scientific">Truxalis nasuta</span>
+            </div>
+          </div>
+          <div class="bar-container">
+            <div class="hp-bar-bg" id="enemy-hp-bg"></div>
+            <div class="hp-bar-fill" id="enemy-hp-fill"></div>
+            <span class="hp-text" id="enemy-hp-text">100 / 100</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Controls Hint at Bottom Left -->
+      <div id="controls-hint">
+        <span id="hint-move"><span class="key-tag">A / D</span> Move</span>
+        <span id="hint-jump"><span class="key-tag">W / Space</span> Jump</span>
+        <span id="hint-slash"><span class="key-tag">J / L-Click</span> Slash</span>
+        <span id="hint-pounce"><span class="key-tag">K / R-Click</span> Pounce</span>
+        <span id="hint-block"><span class="key-tag">L / Shift</span> Block</span>
+      </div>
+
+      <div class="mobile-control-bar">
+        <!-- Floating Controls at Bottom Right -->
+        <div class="hud-controls">
+          <button class="hud-btn" id="btn-settings" title="Settings">⚙️ Settings</button>
+          <button class="hud-btn" id="btn-main-menu" title="Return to Main Menu">🏠 Menu</button>
+        </div>
+
+        <!-- Virtual Touch Controls for Mobile / Tablets -->
+        <div id="touch-controls">
+          <div class="touch-cluster">
+            <button class="touch-btn" id="btn-touch-left">◀</button>
+            <button class="touch-btn" id="btn-touch-right">▶</button>
+            <button class="touch-btn" id="btn-touch-jump">▲</button>
+          </div>
+          <div class="touch-cluster">
+            <button class="touch-btn" id="btn-touch-slash" style="background:rgba(56,176,0,0.5);">🗡️</button>
+            <button class="touch-btn" id="btn-touch-pounce" style="background:rgba(255,183,3,0.5);">⚡</button>
+            <button class="touch-btn" id="btn-touch-block" style="background:rgba(76,201,240,0.5);">🛡️</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Overlays / Modals -->
+
+      <!-- Start Screen Modal -->
+      <div class="overlay" id="overlay-start">
+        <div class="modal-box">
+          <h1 class="game-title-hero" id="start-title-hero">MANTIS</h1>
+          <h2 class="game-title-georgian" id="start-subtitle">DEFEAT THE CREATURES</h2>
+          <p class="modal-sub" id="start-intro">
+            Control the Praying Mantis, wield deadly raptorial forelegs, and conquer 8 challenging stages 
+            against the unique biological fighting styles of real creatures!
+          </p>
+
+          <div class="start-menu-primary-actions" style="margin-top: 20px;">
+            <button class="btn-primary" id="btn-start-game">START GAME</button>
+          </div>
+
+          <div class="main-menu-stage-section">
+            <div class="section-label" id="label-stages-section">🗺️ STAGES</div>
+            <div class="stage-selector-grid" id="stage-select-container">
+              <!-- Dynamically populated -->
+            </div>
+            <p class="stage-progress-note" id="stage-progress-note"></p>
+          </div>
+
+          <div class="start-menu-secondary-actions" style="margin-top: 12px;">
+            <button class="btn-secondary" id="btn-open-epilogue">📖 EPILOGUE</button>
+            <button class="btn-secondary" id="btn-open-settings-start">⚙️ SETTINGS</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Epilogue Modal -->
+      <div class="overlay hidden" id="overlay-epilogue">
+        <div class="modal-box epilogue-box">
+          <h2 class="banner-title victory" id="epilogue-title">EPILOGUE</h2>
+
+          <div class="epilogue-credits-viewport">
+            <div class="epilogue-credits" id="epilogue-credits">
+              <!-- Dynamically rendered according to language -->
+            </div>
+          </div>
+
+          <div style="margin-top: 20px;">
+            <button class="btn-primary" id="btn-close-epilogue">Return to Menu</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Settings Modal -->
+      <div class="overlay hidden" id="overlay-settings">
+        <div class="modal-box">
+          <h2 class="modal-title" id="settings-title">SETTINGS</h2>
+          <p class="modal-sub" id="settings-subtitle">Mantis customization, audio, and language options</p>
+
+          <!-- Language Selector -->
+          <div class="settings-section">
+            <div class="section-label" id="label-settings-lang">🌐 LANGUAGE</div>
+            <div class="lang-selector-group">
+              <button class="lang-btn active" id="btn-lang-en" data-lang="en">English</button>
+              <button class="lang-btn" id="btn-lang-ka" data-lang="ka">ქართული</button>
+            </div>
+          </div>
+
+          <!-- Mantis Color Palette -->
+          <div class="settings-section">
+            <div class="section-label" id="label-settings-color">🦗 MANTIS COLOR</div>
+            <div class="color-palette-grid" id="color-palette-container">
+              <!-- Dynamically populated or rendered buttons -->
+            </div>
+          </div>
+
+          <!-- Audio Controls -->
+          <div class="settings-section">
+            <div class="section-label" id="label-settings-audio">🔊 AUDIO CONTROLS</div>
+            <div class="settings-audio-controls" style="display:flex; gap:16px; align-items:center;">
+              <button class="btn-secondary" id="toggle-sfx-btn">Sound Effects: ON</button>
+              <button class="btn-secondary" id="toggle-bgm-btn">Music: ON</button>
+            </div>
+          </div>
+
+          <div style="margin-top: 20px;">
+            <button class="btn-primary" id="btn-close-settings">Save & Return</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Round Victory Modal -->
+      <div class="overlay hidden" id="overlay-victory">
+        <div class="modal-box">
+          <h2 class="banner-title victory" id="victory-title">VICTORY!</h2>
+          <p class="modal-sub" id="victory-stage-text">Creature defeated!</p>
+
+          <div class="bio-card" id="victory-bio-card">
+            <!-- Creature biology lore inserted by JS -->
+          </div>
+
+          <div style="margin-top: 20px;">
+            <button class="btn-primary" id="btn-next-stage">NEXT STAGE ➔</button>
+            <button class="btn-secondary" id="btn-replay-stage">RETRY</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Round Defeat Modal -->
+      <div class="overlay hidden" id="overlay-defeat">
+        <div class="modal-box">
+          <h2 class="banner-title defeat" id="defeat-title">DEFEATED!</h2>
+          <p class="modal-sub" id="defeat-stage-text">The Mantis was defeated...</p>
+
+          <div class="bio-card" id="defeat-tip-card">
+            <!-- Hint inserted by JS -->
+          </div>
+
+          <div style="margin-top: 20px;">
+            <button class="btn-primary" id="btn-retry-stage">TRY AGAIN ↺</button>
+            <button class="btn-secondary" id="btn-settings-defeat">SETTINGS</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Full Campaign Clear Modal -->
+      <div class="overlay hidden" id="overlay-campaign-clear">
+        <div class="modal-box">
+          <h2 class="banner-title victory" id="clear-title" style="font-size:36px; color:#ffb703;">🏆 CHAMPION!</h2>
+          <p class="modal-sub" id="clear-subtitle">Congratulations! You have conquered all creatures, including the serpent!</p>
+          <div class="bio-card" id="clear-bio-card" style="border-left-color: #ffb703;">
+            <strong id="clear-card-heading">Mantis Triumph:</strong>
+            <span id="clear-card-body">The Praying Mantis has established itself as the apex predator of the wild! Demonstrating unmatched reflexes, stealth, patient parrying, and lethal precision, it overcame nature’s greatest rivals — from agile grasshoppers to the Asian giant hornet and the garter snake!</span>
+          </div>
+          <div style="margin-top: 20px;">
+            <button class="btn-primary" id="btn-open-epilogue-clear">📖 EPILOGUE</button>
+            <button class="btn-secondary" id="btn-restart-campaign">TRY AGAIN</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Game Engine Modules -->
+  <script src="js/i18n.js"></script>
+  <script src="js/audio.js?v=low-power-audio-20260913"></script>
+  <script src="js/creatures.js"></script>
+  <script src="js/stage.js"></script>
+  <script src="js/objects.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/renderer.js"></script>
+  <script src="js/game.js?v=responsive-20260913"></script>
+</body>
+</html>

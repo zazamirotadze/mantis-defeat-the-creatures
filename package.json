@@ -1,0 +1,17 @@
+{
+  "name": "mantis-defeat-the-creatures",
+  "version": "1.0.0",
+  "description": "A browser-based HTML5 Canvas fighting game about a praying mantis.",
+  "author": "Zaza Mirotadze",
+  "license": "MIT",
+  "keywords": [
+    "html5",
+    "canvas",
+    "javascript",
+    "browser-game",
+    "fighting-game",
+    "mantis",
+    "web-audio"
+  ],
+  "private": true
+}
